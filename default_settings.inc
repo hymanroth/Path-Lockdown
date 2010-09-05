@@ -33,7 +33,7 @@ function _plockdown_settings($file){
         'wrapper_end'   => '</PRE>',
       
         'path_width_sum'    => 50,     // width (in chars) of path field in summary section
-        'path_width_det'    => 100,    // width (in chars) of path field in details section
+        'path_width_det'    => 80,     // width (in chars) of path field in details section
         'pad_char'          => '.',    // char used to pad out path field
           
         //each line of output in both summary and detail sections is wrapped inside these tags, based on the menu access status.
