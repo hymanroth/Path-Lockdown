@@ -19,9 +19,9 @@ function _plockdown_settings($file){
   
   return array(
     'file'      => $file,  // appears at the top of Path Lockdown output - useful to know which config file is being used
-    'key'       => 'ld',   // used for the enabling query string and the cookie name
+    'key'       => 'pl',   // used for the enabling query string and the hash basis for the cookie name
     'pwd'       => 'pwd',  // to enable Path Lockdown you must add a query of the following form to any Drupal url: ?key=pwd (where key and pwd are defined above)
-    'menu_path' => 'ld',   // to avoid conflicts (and for security), you can specify which menu path the module responds to (remember to rebuild your menus!) 
+    'menu_path' => 'pl',   // to avoid conflicts (and for security), you can specify which menu path the module responds to (remember to rebuild your menus!) 
   
     'system' => array(     // any root menu path not in this list will be considered a 'site' path. Add your own depending on your setup
        'admin', 'admin_menu','advanced_help','batch','content','ctools','devel','filter','filefield','help','js','logout',

@@ -4,7 +4,7 @@
 /*
  * Path Lockdown module by David Semeria
  * 
- * Displays and tests for access all paths available to a given user
+ * Displays and tests for access all paths available to a given Drupal user
  * 
  */
 
@@ -22,14 +22,14 @@ function plockdown_init(){
   $settings = _plockdown_get_settings();
   if (isset($_GET[$settings['key']])){
     if ($_GET[$settings['key']] == $settings['pwd']){
-      setcookie( $settings['key'], md5($settings['pwd']), 0, '/');  //expires with session
+      setcookie( md5($settings['key']), md5($settings['pwd']), 0, '/');  //expires with session
       drupal_set_message('Path Lockdown enabled');
     }
     else{
-      setcookie( $settings['key'], 0, 0, '/');
+      setcookie( md5($settings['key']), 0, 0, '/');
       drupal_set_message('Path Lockdown disabled');
     }  
-    drupal_goto($_GET['q']); 
+    drupal_goto( $settings['menu_path'] ); 
   }
 }
 
@@ -51,7 +51,7 @@ function plockdown_menu(){
 
 function _plockdown_access(){
   $settings = _plockdown_get_settings();
-  return ($_COOKIE[$settings['key']] == md5($settings['pwd']));
+  return ($_COOKIE[md5($settings['key'])] == md5($settings['pwd']));
 }
 
 function _plockdown_pcb($uid = NULL){
@@ -59,7 +59,7 @@ function _plockdown_pcb($uid = NULL){
   $paths = plockdown_get_paths();
   
   $o   = $settings['format']['wrapper_start'];
-  $o  .= "<h2>plockdown PATH INFORMATION</h2>";
+  $o  .= "<h2>PATH LOCKDOWN</h2>";
   
   global $user;
   if ($uid !== NULL && $uid != $user->uid){
