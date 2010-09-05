@@ -9,13 +9,13 @@
  */
 
 function _plockdown_get_settings(){
- global $__plockdown_settings;
- if (!empty($plockdown_settings)) return $__plockdown_settings;
+ static $plockdown_settings;
+ if (!empty($plockdown_settings)) return $plockdown_settings;
  $mp = drupal_get_path('module','plockdown');  
  $file = (file_exists( $mp . '/settings.inc' )) ?'settings.inc' :'default_settings.inc';
  require_once $mp . '/' . $file;
- $__plockdown_settings = _plockdown_settings($file);
- return $__plockdown_settings;
+ $plockdown_settings = _plockdown_settings($file);
+ return $plockdown_settings;
 }
 
 function plockdown_init(){
@@ -65,7 +65,7 @@ function _plockdown_pcb($uid = NULL){
   if ($uid !== NULL && $uid != $user->uid){
     $real_user = $user;
     $tu = user_load($uid);
-    if (!is_numeric($tu->uid)) return "plockdown: unknown uid: $uid";
+    if (!is_numeric($tu->uid)) return "Path Lockdown: unknown uid: $uid";
     $user = $tu;
   }
   $o .= 'uid: '   . $user->uid . '<br>';
