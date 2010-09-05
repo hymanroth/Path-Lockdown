@@ -1,0 +1,7 @@
+; $Id$
+
+name = Path Lockdown
+description = Displays and tests for access all paths available to a given user
+core = 6.x
+
+package = Development

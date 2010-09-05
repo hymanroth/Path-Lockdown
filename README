@@ -1,0 +1,45 @@
+$Id$
+
+Path Lockdown module by David Semeria
+=====================================
+
+
+DESCRIPTION
+Path Lockdown generates a full list of all paths present on a Drupal site, and shows whether a given user can access them or not.
+
+Paths are broken down into two main categories: system and site.
+System paths are those provided by Drupal core and any third-party modules.
+Site paths are those which are not system paths.
+If you set-up your settings.inc file correctly, only your site-specific paths will be appear under 'site'.
+
+QUICK START
+Create a folder in sites/all/modules and put the Path Lockdown files in it.
+Enable the Path Lockdown module. It appears under 'Development' in the module list.
+Choose any url on your site and append this exact query: ?ld=pwd (you can change this later)
+The query string should disappear from the browser address bar, and you should get a message saying Path Lockdown is enabled
+Now type in the following url: yoursite.com/ld
+You should see a page containing the full Path Lockdown output for the current user.
+You can switch users (for example using the devel module) and the page will refresh.
+There is no need to re-enable the module for each user.
+To turn-off the module just append the following query: ?ld
+Path Lockdown uses a session cookie for access control, and so closing your browser will also cause it to be disabled.  
+
+UID MODE
+Instead of logging in/out as a specific user, you can also pass Lockdown a user id (uid)
+With Path Lockdown enabled, type in the url: yoursite.com/ld/uid (where uid = the user id you want to verify).
+The module makes sure the uid is valid before processing, so don't worry about typos.
+
+CUSTOMIZATION
+For security purposes you can change the activation query (?ld=..), the activation password, and the path used by Path Lockdown (yoursite.com/ld). 
+See default_settings.inc for details.
+
+Since no two Drupal installations are identical, you will almost certainly have to add to the system paths in your settings.inc.
+See default_settings.inc for details. 
+
+You can also change the output format by specifying your own HTML tags.
+
+
+
+
+
+

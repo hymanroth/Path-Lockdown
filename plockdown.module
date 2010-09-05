@@ -1,0 +1,184 @@
+<?php
+// $Id$ 
+
+/*
+ * Path Lockdown module by David Semeria
+ * 
+ * Displays and tests for access all paths available to a given user
+ * 
+ */
+
+function _plockdown_get_settings(){
+ global $__plockdown_settings;
+ if (!empty($plockdown_settings)) return $__plockdown_settings;
+ $mp = drupal_get_path('module','plockdown');  
+ $file = (file_exists( $mp . '/settings.inc' )) ?'settings.inc' :'default_settings.inc';
+ require_once $mp . '/' . $file;
+ $__plockdown_settings = _plockdown_settings($file);
+ return $__plockdown_settings;
+}
+
+function plockdown_init(){
+  $settings = _plockdown_get_settings();
+  if (isset($_GET[$settings['key']])){
+    if ($_GET[$settings['key']] == $settings['pwd']){
+      setcookie( $settings['key'], md5($settings['pwd']), 0, '/');  //expires with session
+      drupal_set_message('Path Lockdown enabled');
+    }
+    else{
+      setcookie( $settings['key'], 0, 0, '/');
+      drupal_set_message('Path Lockdown disabled');
+    }  
+    drupal_goto($_GET['q']); 
+  }
+}
+
+function plockdown_menu(){
+  $settings = _plockdown_get_settings();
+  $items[$settings['menu_path']] = array( 
+    'page callback'   => '_plockdown_pcb',
+    'access callback' => '_plockdown_access',
+    'type' => MENU_CALLBACK,
+  );
+  $items[$settings['menu_path'] . '/%'] = array( 
+    'page callback'   => '_plockdown_pcb',
+    'access callback' => '_plockdown_access',
+    'page arguments'  => array(1),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function _plockdown_access(){
+  $settings = _plockdown_get_settings();
+  return ($_COOKIE[$settings['key']] == md5($settings['pwd']));
+}
+
+function _plockdown_pcb($uid = NULL){
+  $settings = _plockdown_get_settings();
+  $paths = plockdown_get_paths();
+  
+  $o   = $settings['format']['wrapper_start'];
+  $o  .= "<h2>plockdown PATH INFORMATION</h2>";
+  
+  global $user;
+  if ($uid !== NULL && $uid != $user->uid){
+    $real_user = $user;
+    $tu = user_load($uid);
+    if (!is_numeric($tu->uid)) return "plockdown: unknown uid: $uid";
+    $user = $tu;
+  }
+  $o .= 'uid: '   . $user->uid . '<br>';
+  $o .= 'name: '  . $user->name . '<br>';;
+  $o .= 'roles: ' . implode(', ', $user->roles) . '<br>';
+  $o .= 'config: '  . $settings['file'] . '<br><br>';
+  
+  $o .= plockdown_gen_summary($paths,$settings);
+  $o .= plockdown_gen_detail($paths,$settings);
+  
+  $o .= $settings['format']['wrapper_end'];
+  
+  if (isset($real_user)) $user = $real_user;
+  return $o;
+}
+
+function plockdown_get_paths(){
+  $settings = _plockdown_get_settings();
+  $paths = array('site' => array(), 'system' => array());
+  foreach(array_keys(module_invoke_all('menu')) as $path) {
+    $root   = _plockdown_get_root($path);
+    $cat    = _plockdown_get_category($root,$settings);
+    $paths[$cat][$root][$path] = _plockdown_menu_access($path);
+  }
+  _plockdown_sort($paths['site']);
+  _plockdown_sort($paths['system']);
+  return $paths;
+}
+
+function _plockdown_get_root($path){
+  $p = strpos($path,'/',1);
+  if ($p === false) return $path;
+  return (substr($path,0,$p));
+}
+
+function _plockdown_get_category($root,$settings){
+  return (in_array($root,$settings['system'])) ?'system' :'site';
+}
+
+function _plockdown_menu_access($path = NULL) {
+  if ($router_item = menu_get_item($path)) {
+    return ($router_item['access']) ?'open' :'closed';
+  }
+  return 'NOT FOUND';
+}
+
+function _plockdown_sort(&$list){
+  ksort($list);
+  foreach( $list as $k => $v){
+    ksort($list[$k]);
+  }
+}
+
+function plockdown_gen_summary($paths, $settings){ 
+  $sum  = _plockdown_gen_summ('site',   $paths, $settings);
+  $sum .= _plockdown_gen_summ('system', $paths, $settings);
+  return $sum;
+}
+
+function _plockdown_gen_summ($category, $paths, $settings){ 
+  $list = $paths[$category];
+  $f    = $settings['format'];
+  $sum  = "<h3>Summary for $category paths</h3>";
+  
+  $sum .= "<h4>Multiple paths</h4>";
+  foreach ($list as $root => $v){
+    $c = $o = 0; 
+    foreach ($v as $p => $s){
+      $c++;
+      if ($s == 'open') $o++; 
+    }
+    if ($c >1) { 
+      $d = (!$o) ?array('aic',"All closed ($c)") :(($o == $c) ?array('aio',"All open ($c)") :array('aim',"$c items, of which $o are open"));
+      $sum .= $f['s_' . $d[0]] . str_pad($root, $f['path_width_sum'], $f['pad_char']) . $d[1] . $f['e_' . $d[0]];
+    }
+  }
+  
+  $sum .= "<br><h4>Single paths</h4>";
+  foreach ($list as $root => $v){
+    $c = $o = 0; 
+    foreach ($v as $p => $s){
+      $c++;
+      if ($s == 'open') $o++; 
+    }
+    if ($c == 1) { 
+      $d = (!$o) ?array('aic',"Single closed path") :array('aio',"Single open path");
+      $sum .= $f['s_' . $d[0]] . str_pad($p, $f['path_width_sum'], $f['pad_char']) . $d[1] . $f['e_' . $d[0]];
+    }
+  }
+  return $sum . '<br>';
+}
+
+function plockdown_gen_detail($paths,$settings){
+  $det  = _plockdown_gen_det('site',   $paths, $settings);
+  $det .= _plockdown_gen_det('system', $paths, $settings);
+  return $det;
+}
+
+function _plockdown_gen_det($category, $paths, $settings){ 
+  $list = $paths[$category];
+  $f    = $settings['format'];
+  $det  = "<h3>Individual path details for $category</h3>";
+  
+  foreach( $list as $root => $a){
+    $det .= "<h4>$root</h4>";
+    foreach ($a as $p => $s){
+      switch ($s){
+        case 'open'     : $det .= $f['s_aio'] . str_pad($p, $f['path_width_det'], $f['pad_char']) .  $s . $f['e_aio']; break;   
+        case 'closed'   : $det .= $f['s_aic'] . str_pad($p, $f['path_width_det'], $f['pad_char']) .  $s . $f['e_aic']; break;  
+        case 'NOT FOUND': $det .= $f['s_aim'] . str_pad($p, $f['path_width_det'], $f['pad_char']) .  $s . $f['e_aim']; break;     
+      }  
+    }
+  }
+  return $det . '<br>';
+}
+
