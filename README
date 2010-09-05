@@ -16,9 +16,7 @@ QUICK START
 Create a folder in sites/all/modules and put the Path Lockdown files in it.
 Enable the Path Lockdown module. It appears under 'Development' in the module list.
 Choose any url on your site and append this exact query: ?pl=pwd (you can change this later)
-The query string should disappear from the browser address bar, and you should get a message saying Path Lockdown is enabled
-Now type in the following url: yoursite.com/pl
-You should see a page containing the full Path Lockdown output for the current user.
+You should now see a page containing the full Path Lockdown output for the current user.
 You can switch users (for example using the devel module) and the page will refresh.
 There is no need to re-enable the module for each user.
 To turn-off the module just append the following query: ?pl
