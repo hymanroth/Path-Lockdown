@@ -99,7 +99,7 @@ function _plockdown_get_root($path){
   $p = strpos($path,'/',1);
   if ($p === false) return $path;
   return (substr($path,0,$p));
-}
+}  
 
 function _plockdown_get_category($root,$settings){
   return (in_array($root,$settings['system'])) ?'system' :'site';
@@ -109,7 +109,9 @@ function _plockdown_menu_access($path = NULL) {
   if ($router_item = menu_get_item($path)) {
     return array ( 'status' => ($router_item['access']) ?'open' :'closed',
                    'pcb'    =>  $router_item['page_callback'],
-                   'acb'    =>  $router_item['access_callback'] );
+                   'acb'    =>  $router_item['access_callback'],
+                   'aae'    =>  strpos($router_item['access_arguments'],'a:') !== 0  //access arguments not an array
+                 );
   }
   return 'NOT FOUND';
 }
@@ -174,10 +176,11 @@ function _plockdown_gen_det($category, $paths, $settings){
   foreach( $list as $root => $a){
     $det .= "<h4>$root</h4>";
     foreach ($a as $p => $item){
+      $aae = ($item['aae']) ?"  ACCESS ARGUMENTS NOT AN ARRAY" :'';
       switch ($item['status']){
-        case 'open'     : $det .= $f['s_aio'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $f['e_aio']; break;   
-        case 'closed'   : $det .= $f['s_aic'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $f['e_aic']; break;  
-        case 'NOT FOUND': $det .= $f['s_aim'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $f['e_aim']; break;     
+        case 'open'     : $det .= $f['s_aio'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $aae . $f['e_aio']; break;   
+        case 'closed'   : $det .= $f['s_aic'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $aae . $f['e_aic']; break;  
+        case 'NOT FOUND': $det .= $f['s_aim'] . str_pad($p, $f['path_width_det'], $f['pad_char']) . str_pad($item['status'],12,' ') . $item['acb'] . '  ' . $item['pcb'] . $aae . $f['e_aim']; break;     
       }  
     }
   }

@@ -25,7 +25,8 @@ function _plockdown_settings($file){
   
     'system' => array(     // any root menu path not in this list will be considered a 'site' path. Add your own depending on your setup
        'admin', 'admin_menu','advanced_help','batch','content','ctools','devel','filter','filefield','help','js','logout',
-       'node','nodereference','noderelationships','panels','rss.xml','sites','system','taxonomy','upload','user','userreference' 
+       'node','nodereference','noderelationships','panels','rss.xml','sites','system','taxonomy','upload','user','userreference',
+       'test','test2','test3', //ctools!
       ),
       
      'format' => array(
